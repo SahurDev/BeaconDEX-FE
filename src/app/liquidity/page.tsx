@@ -333,8 +333,6 @@ export default function LiquidityPage() {
         </div>
       </div>
       
-      {/* Bottom spacing */}
-      <div className="h-32"></div>
     </div>
   );
 }
