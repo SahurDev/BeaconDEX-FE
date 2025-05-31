@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Header() {
-  const [isWalletOpen, setIsWalletOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -47,46 +47,102 @@ export default function Header() {
 
           {/* Connect Wallet Button */}
           <div className="hidden md:block">
-            <button
-              onClick={() => setIsWalletOpen(!isWalletOpen)}
-              className="btn-primary flex items-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                />
-              </svg>
-              Connect Wallet
-            </button>
+            <ConnectButton.Custom>
+              {({
+                account,
+                chain,
+                openAccountModal,
+                openChainModal,
+                openConnectModal,
+                mounted,
+              }) => {
+                const ready = mounted;
+                const connected = ready && account && chain;
 
-            {/* Wallet Connect Dropdown */}
-            {isWalletOpen && (
-              <div className="absolute right-0 mt-2 w-56 glass p-4 shadow-lg">
-                <div className="text-sm text-white font-medium mb-3">
-                  Connect with:
-                </div>
-                <div className="space-y-2">
-                  <button className="w-full text-left px-4 py-2 hover:bg-white/10 text-sm transition-colors">
-                    MetaMask
-                  </button>
-                  <button className="w-full text-left px-4 py-2 hover:bg-white/10 text-sm transition-colors">
-                    WalletConnect
-                  </button>
-                  <button className="w-full text-left px-4 py-2 hover:bg-white/10 text-sm transition-colors">
-                    Coinbase Wallet
-                  </button>
-                </div>
-              </div>
-            )}
+                return (
+                  <div
+                    {...(!ready && {
+                      'aria-hidden': true,
+                      'style': {
+                        opacity: 0,
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                      },
+                    })}
+                  >
+                    {(() => {
+                      if (!connected) {
+                        return (
+                          <button onClick={openConnectModal} className="btn-primary flex items-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 mr-2"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                              />
+                            </svg>
+                            Connect Wallet
+                          </button>
+                        );
+                      }
+
+                      if (chain.unsupported) {
+                        return (
+                          <button onClick={openChainModal} className="btn-primary">
+                            Wrong network
+                          </button>
+                        );
+                      }
+
+                      return (
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={openChainModal}
+                            className="glass px-3 py-2 rounded-lg hover:bg-white/20 transition-colors flex items-center space-x-2"
+                          >
+                            {chain.hasIcon && (
+                              <div
+                                style={{
+                                  background: chain.iconBackground,
+                                  width: 20,
+                                  height: 20,
+                                  borderRadius: 999,
+                                  overflow: 'hidden',
+                                  marginRight: 4,
+                                }}
+                              >
+                                {chain.iconUrl && (
+                                  <img
+                                    alt={chain.name ?? 'Chain icon'}
+                                    src={chain.iconUrl}
+                                    style={{ width: 20, height: 20 }}
+                                  />
+                                )}
+                              </div>
+                            )}
+                            <span className="text-white text-sm">{chain.name}</span>
+                          </button>
+
+                          <button onClick={openAccountModal} className="btn-primary">
+                            {account.displayName}
+                            {account.displayBalance
+                              ? ` (${account.displayBalance})`
+                              : ''}
+                          </button>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                );
+              }}
+            </ConnectButton.Custom>
           </div>
 
           {/* Mobile menu button */}
@@ -144,26 +200,9 @@ export default function Header() {
             >
               POOLS
             </Link>
-            <button
-              onClick={() => setIsWalletOpen(!isWalletOpen)}
-              className="w-full text-left flex items-center text-gray-300 hover:text-white px-3 py-2 text-base font-medium"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                />
-              </svg>
-              Connect Wallet
-            </button>
+            <div className="px-3 py-2">
+              <ConnectButton />
+            </div>
           </div>
         </div>
       )}

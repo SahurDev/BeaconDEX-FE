@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useAccount, useBalance } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 interface Token {
   symbol: string;
@@ -25,7 +27,12 @@ export default function SwapPage() {
   const [isFromTokenOpen, setIsFromTokenOpen] = useState(false);
   const [isToTokenOpen, setIsToTokenOpen] = useState(false);
   const [slippage, setSlippage] = useState("0.5");
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  
+  const { address, isConnected } = useAccount();
+  const { data: balance } = useBalance({
+    address,
+    token: fromToken.address === "0x0000000000000000000000000000000000000000" ? undefined : fromToken.address as `0x${string}`,
+  });
 
   const handleSwapTokens = () => {
     const tempToken = fromToken;
@@ -35,9 +42,6 @@ export default function SwapPage() {
     setToAmount(fromAmount);
   };
 
-  const handleConnectWallet = () => {
-    setIsWalletConnected(true);
-  };
 
   const estimatedOutput = fromAmount ? (parseFloat(fromAmount) * 0.998).toFixed(6) : "";
 
@@ -73,7 +77,9 @@ export default function SwapPage() {
 
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-gray-400">Balance: 0.0</div>
+                  <div className="text-xs text-gray-400">
+                    Balance: {balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : '0.0'}
+                  </div>
                 </div>
               </div>
               <input
@@ -125,7 +131,9 @@ export default function SwapPage() {
 
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-gray-400">Balance: 0.0</div>
+                  <div className="text-xs text-gray-400">
+                    Balance: {balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : '0.0'}
+                  </div>
                 </div>
               </div>
               <input
@@ -179,13 +187,17 @@ export default function SwapPage() {
           )}
 
           {/* Connect Wallet / Swap Button */}
-          {!isWalletConnected ? (
-            <button
-              onClick={handleConnectWallet}
-              className="w-full btn-primary text-center"
-            >
-              Connect Wallet
-            </button>
+          {!isConnected ? (
+            <ConnectButton.Custom>
+              {({ openConnectModal }) => (
+                <button
+                  onClick={openConnectModal}
+                  className="w-full btn-primary text-center"
+                >
+                  Connect Wallet
+                </button>
+              )}
+            </ConnectButton.Custom>
           ) : (
             <button
               disabled={!fromAmount || parseFloat(fromAmount) <= 0}
