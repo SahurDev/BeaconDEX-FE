@@ -1,0 +1,51 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: nextjs-wagmi-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Prevent overwriting node_modules
+      - /app/node_modules
+      # Prevent overwriting .next build cache
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Optional: Local blockchain for testing
+  # ganache:
+  #   image: trufflesuite/ganache:latest
+  #   container_name: local-blockchain
+  #   ports:
+  #     - "8545:8545"
+  #   command: >
+  #     --wallet.deterministic
+  #     --wallet.totalAccounts=10
+  #     --wallet.defaultBalance=1000
+  #     --server.host=0.0.0.0
+  #     --chain.chainId=1337
+  #     --chain.networkId=1337
+  #     --server.port=8545
+  #   networks:
+  #     - app-network
+  #   restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  node_modules:
+  next_cache:

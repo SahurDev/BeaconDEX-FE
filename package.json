@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docker:dev": "docker compose up --build",
+    "docker:prod": "docker compose -f compose.yaml -f docker-compose.prod.yml up --build -d",
+    "docker:stop": "docker compose down",
+    "docker:clean": "docker compose down -v --rmi all"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.5",
