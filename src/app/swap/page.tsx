@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useAccount, useBalance } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface Token {
   symbol: string;
@@ -49,20 +52,22 @@ export default function SwapPage() {
     <div className="min-h-screen pt-20 px-6 sm:px-10 lg:px-12">
       <div className="max-w-md mx-auto pt-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold gradient-text mb-2">Swap Tokens</h1>
+          <h1 className={cn("text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent")}>Swap Tokens</h1>
           <p className="text-gray-400">Trade tokens in an instant</p>
         </div>
 
-        <div className="feature-card">
+        <Card className={cn("bg-black/30 border-primary/20 backdrop-blur-xl")}>
+          <CardContent className="p-6">
           {/* From Token Section */}
           <div className="mb-4">
             <label className="text-sm text-gray-400 block mb-2">From</label>
-            <div className="glass p-4 rounded-lg">
+            <div className={cn("bg-black/20 backdrop-blur-xl border border-white/10 p-4 rounded-lg")}>
               <div className="flex justify-between items-center mb-3">
                 <div className="relative">
-                  <button
+                  <Button
                     onClick={() => setIsFromTokenOpen(!isFromTokenOpen)}
-                    className="flex items-center space-x-2 text-white hover:text-primary transition-colors bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg border border-white/10 hover:border-primary/50"
+                    variant="outline"
+                    className={cn("flex items-center space-x-2 text-white hover:text-primary transition-colors bg-white/5 hover:bg-white/10 border-white/10 hover:border-primary/50")}
                   >
                     <div className="w-6 h-6 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
                       <span className="text-xs font-bold">{fromToken.symbol[0]}</span>
@@ -73,7 +78,7 @@ export default function SwapPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
-                  </button>
+                  </Button>
 
                 </div>
                 <div className="text-right">
@@ -97,15 +102,16 @@ export default function SwapPage() {
 
           {/* Swap Button */}
           <div className="flex justify-center my-4">
-            <button
+            <Button
               onClick={handleSwapTokens}
-              className="p-3 bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary rounded-full transition-all duration-300 hover:scale-110 hover:rotate-180 shadow-lg"
-              style={{boxShadow: 'var(--glow)'}}
+              variant="gradient"
+              size="icon"
+              className="p-3 rounded-full transition-all duration-300 hover:scale-110 hover:rotate-180"
             >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
               </svg>
-            </button>
+            </Button>
           </div>
 
           {/* To Token Section */}
@@ -210,7 +216,8 @@ export default function SwapPage() {
               {fromAmount && parseFloat(fromAmount) > 0 ? "Swap" : "Enter an amount"}
             </button>
           )}
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* From Token Dropdown - Fixed positioned to appear above everything */}

@@ -1,14 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --background: #070a19;
-  --foreground: #ededed;
-  --primary: #7367f0;
-  --secondary: #00f2fe;
-  --accent: #ff00ea;
-  --glow: 0 0 20px rgba(115, 103, 240, 0.5);
-  --glow-accent: 0 0 20px rgba(255, 0, 234, 0.7);
-  --glow-secondary: 0 0 20px rgba(0, 242, 254, 0.7);
+@layer base {
+  :root {
+    --background: #070a19;
+    --foreground: #ededed;
+    --primary: #7367f0;
+    --secondary: #00f2fe;
+    --accent: #ff00ea;
+    --glow: 0 0 20px rgba(115, 103, 240, 0.5);
+    --glow-accent: 0 0 20px rgba(255, 0, 234, 0.7);
+    --glow-secondary: 0 0 20px rgba(0, 242, 254, 0.7);
+    
+    /* shadcn/ui CSS variables */
+    --card: hsl(from var(--background) h s l / 0.3);
+    --card-foreground: var(--foreground);
+    --popover: var(--background);
+    --popover-foreground: var(--foreground);
+    --muted: hsl(from var(--background) h s l / 0.5);
+    --muted-foreground: hsl(from var(--foreground) h s l / 0.6);
+    --border: hsl(from var(--primary) h s l / 0.2);
+    --input: hsl(from var(--primary) h s l / 0.2);
+    --ring: var(--primary);
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --radius: 0.5rem;
+  }
 }
 
 @theme inline {
@@ -17,6 +33,13 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

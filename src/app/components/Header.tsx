@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass">
+    <header className={cn("fixed top-0 left-0 right-0 z-50", "bg-black/20 backdrop-blur-xl border-b border-white/10")}>
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -24,25 +26,22 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-12">
-            <Link
-              href="/swap"
-              className="text-gray-300 hover:text-white hover:glow-text px-3 py-2 text-base font-bold transition-all"
-            >
-              Swap
-            </Link>
-            <Link
-              href="/liquidity"
-              className="text-gray-300 hover:text-white hover:glow-text px-3 py-2 text-base font-bold transition-all"
-            >
-              Liquidity
-            </Link>
-            <Link
-              href="/pools"
-              className="text-gray-300 hover:text-white hover:glow-text px-3 py-2 text-base font-bold transition-all"
-            >
-              Pools
-            </Link>
+          <nav className="hidden md:flex space-x-8">
+            <Button variant="ghost" asChild className="hover:bg-transparent transition-all duration-500">
+              <Link href="/swap" className={cn("bg-gradient-to-r from-gray-300 to-gray-300 bg-clip-text text-transparent px-6 py-4 text-xl font-black tracking-wide transition-all duration-500", "hover:from-primary hover:to-secondary")}>
+                Swap
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild className="hover:bg-transparent transition-all duration-500">
+              <Link href="/liquidity" className={cn("bg-gradient-to-r from-gray-300 to-gray-300 bg-clip-text text-transparent px-6 py-4 text-xl font-black tracking-wide transition-all duration-500", "hover:from-primary hover:to-secondary")}>
+                Liquidity
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild className="hover:bg-transparent transition-all duration-500">
+              <Link href="/pools" className={cn("bg-gradient-to-r from-gray-300 to-gray-300 bg-clip-text text-transparent px-6 py-4 text-xl font-black tracking-wide transition-all duration-500", "hover:from-primary hover:to-secondary")}>
+                Pools
+              </Link>
+            </Button>
           </nav>
 
           {/* Connect Wallet Button */}
@@ -73,7 +72,7 @@ export default function Header() {
                     {(() => {
                       if (!connected) {
                         return (
-                          <button onClick={openConnectModal} className="btn-primary flex items-center">
+                          <Button onClick={openConnectModal} variant="gradient" className="flex items-center font-semibold">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               className="h-5 w-5 mr-2"
@@ -89,23 +88,24 @@ export default function Header() {
                               />
                             </svg>
                             Connect Wallet
-                          </button>
+                          </Button>
                         );
                       }
 
                       if (chain.unsupported) {
                         return (
-                          <button onClick={openChainModal} className="btn-primary">
+                          <Button onClick={openChainModal} variant="gradient">
                             Wrong network
-                          </button>
+                          </Button>
                         );
                       }
 
                       return (
                         <div className="flex items-center space-x-3">
-                          <button
+                          <Button
                             onClick={openChainModal}
-                            className="glass px-3 py-2 rounded-lg hover:bg-white/20 transition-colors flex items-center space-x-2"
+                            variant="outline"
+                            className={cn("px-3 py-2 bg-black/20 backdrop-blur-xl border-white/20 hover:bg-white/20 transition-colors flex items-center space-x-2")}
                           >
                             {chain.hasIcon && (
                               <div
@@ -128,14 +128,14 @@ export default function Header() {
                               </div>
                             )}
                             <span className="text-white text-sm">{chain.name}</span>
-                          </button>
+                          </Button>
 
-                          <button onClick={openAccountModal} className="btn-primary">
+                          <Button onClick={openAccountModal} variant="gradient">
                             {account.displayName}
                             {account.displayBalance
                               ? ` (${account.displayBalance})`
                               : ''}
-                          </button>
+                          </Button>
                         </div>
                       );
                     })()}
@@ -147,9 +147,11 @@ export default function Header() {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <button
+            <Button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 text-white"
+              variant="ghost"
+              size="icon"
+              className="text-white"
             >
               <svg
                 className="h-6 w-6"
@@ -173,33 +175,30 @@ export default function Header() {
                   />
                 )}
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden glass">
+        <div className={cn("md:hidden", "bg-black/20 backdrop-blur-xl border-t border-white/10")}>
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link
-              href="/swap"
-              className="text-gray-300 hover:text-white block px-3 py-2 text-base font-bold"
-            >
-              SWAP
-            </Link>
-            <Link
-              href="/liquidity"
-              className="text-gray-300 hover:text-white block px-3 py-2 text-base font-bold"
-            >
-              LIQUIDITY
-            </Link>
-            <Link
-              href="/pools"
-              className="text-gray-300 hover:text-white block px-3 py-2 text-base font-bold"
-            >
-              POOLS
-            </Link>
+            <Button variant="ghost" asChild className="w-full justify-start hover:bg-transparent transition-all duration-500">
+              <Link href="/swap" className={cn("bg-gradient-to-r from-gray-300 to-gray-300 bg-clip-text text-transparent block px-6 py-4 text-xl font-black tracking-wide transition-all duration-500", "hover:from-primary hover:to-secondary")}>
+                Swap
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild className="w-full justify-start hover:bg-transparent transition-all duration-500">
+              <Link href="/liquidity" className={cn("bg-gradient-to-r from-gray-300 to-gray-300 bg-clip-text text-transparent block px-6 py-4 text-xl font-black tracking-wide transition-all duration-500", "hover:from-primary hover:to-secondary")}>
+                Liquidity
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild className="w-full justify-start hover:bg-transparent transition-all duration-500">
+              <Link href="/pools" className={cn("bg-gradient-to-r from-gray-300 to-gray-300 bg-clip-text text-transparent block px-6 py-4 text-xl font-black tracking-wide transition-all duration-500", "hover:from-primary hover:to-secondary")}>
+                Pools
+              </Link>
+            </Button>
             <div className="px-3 py-2">
               <ConnectButton />
             </div>
