@@ -1,6 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import PoolFactoryConnection from "@/components/PoolFactoryConnection";
+import AddLiquiditySection from "@/components/AddLiquiditySection";
+import { useCreatePool } from "@/hooks/usePoolFactory";
+import { useAccount } from "wagmi";
+import { Address } from "viem";
 
 interface Pool {
   id: string;
@@ -75,54 +80,6 @@ const mockPools: Pool[] = [
     createdAt: "2024-01-20",
     status: "Active",
     feeRate: 0.01
-  },
-  {
-    id: "4",
-    token0: { symbol: "ETH", name: "Ethereum", address: "0x..." },
-    token1: { symbol: "WBTC", name: "Wrapped Bitcoin", address: "0x..." },
-    tvl: 6700000,
-    volume24h: 1200000,
-    volume7d: 7800000,
-    fees24h: 3600,
-    fees7d: 23400,
-    apr: 19.6,
-    liquidity: 4500000,
-    poolShare: 0.184,
-    createdAt: "2024-02-01",
-    status: "Active",
-    feeRate: 0.3
-  },
-  {
-    id: "5",
-    token0: { symbol: "LINK", name: "Chainlink", address: "0x..." },
-    token1: { symbol: "ETH", name: "Ethereum", address: "0x..." },
-    tvl: 3400000,
-    volume24h: 680000,
-    volume7d: 4200000,
-    fees24h: 2040,
-    fees7d: 12600,
-    apr: 15.8,
-    liquidity: 2800000,
-    poolShare: 0.094,
-    createdAt: "2024-02-10",
-    status: "New",
-    feeRate: 0.3
-  },
-  {
-    id: "6",
-    token0: { symbol: "UNI", name: "Uniswap", address: "0x..." },
-    token1: { symbol: "USDC", name: "USD Coin", address: "0x..." },
-    tvl: 2100000,
-    volume24h: 420000,
-    volume7d: 2800000,
-    fees24h: 1260,
-    fees7d: 8400,
-    apr: 12.4,
-    liquidity: 1800000,
-    poolShare: 0.058,
-    createdAt: "2024-02-15",
-    status: "Active",
-    feeRate: 0.3
   }
 ];
 
@@ -131,6 +88,16 @@ export default function PoolsPage() {
   const [sortBy, setSortBy] = useState<"tvl" | "volume24h" | "apr" | "fees24h">("tvl");
   const [filterStatus, setFilterStatus] = useState<"All" | "Active" | "Inactive" | "New">("All");
   const [showCreatePool, setShowCreatePool] = useState(false);
+  
+  // Create pool form state
+  const [token0Address, setToken0Address] = useState("");
+  const [token1Address, setToken1Address] = useState("");
+  const [oracle0Address, setOracle0Address] = useState("");
+  const [oracle1Address, setOracle1Address] = useState("");
+  
+  // Wagmi hooks
+  const { isConnected } = useAccount();
+  const { createNewPool, isCreating, isConfirming, isSuccess } = useCreatePool();
 
   const formatNumber = (num: number) => {
     if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
@@ -176,8 +143,42 @@ export default function PoolsPage() {
 
   const totalTVL = mockPools.reduce((sum, pool) => sum + pool.tvl, 0);
   const totalVolume24h = mockPools.reduce((sum, pool) => sum + pool.volume24h, 0);
-  const totalFees24h = mockPools.reduce((sum, pool) => sum + pool.fees24h, 0);
   const avgAPR = mockPools.reduce((sum, pool) => sum + pool.apr, 0) / mockPools.length;
+
+  // Handle create pool form submission
+  const handleCreatePool = async () => {
+    if (!token0Address || !token1Address || !oracle0Address || !oracle1Address) {
+      alert("Please fill in all fields");
+      return;
+    }
+    
+    if (!isConnected) {
+      alert("Please connect your wallet first");
+      return;
+    }
+    
+    try {
+      await createNewPool(
+        token0Address as Address,
+        token1Address as Address,
+        oracle0Address as Address,
+        oracle1Address as Address
+      );
+    } catch (error) {
+      console.error("Error creating pool:", error);
+    }
+  };
+
+  // Reset form when pool is successfully created
+  if (isSuccess) {
+    setTimeout(() => {
+      setToken0Address("");
+      setToken1Address("");
+      setOracle0Address("");
+      setOracle1Address("");
+      setShowCreatePool(false);
+    }, 2000);
+  }
 
   return (
     <div className="min-h-screen pt-20 px-6 sm:px-10 lg:px-12">
@@ -185,11 +186,11 @@ export default function PoolsPage() {
         {/* Page Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold gradient-text mb-2">Liquidity Pools</h1>
-          <p className="text-gray-400 text-lg">Explore and manage all available liquidity pools</p>
+          <p className="text-gray-400 text-lg">Create and manage liquidity pools</p>
         </div>
 
         {/* Overview Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="feature-card">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-gray-400 text-sm font-medium">Total Pools</h3>
@@ -218,19 +219,6 @@ export default function PoolsPage() {
 
           <div className="feature-card">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-gray-400 text-sm font-medium">24h Volume</h3>
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-            </div>
-            <div className="text-2xl font-bold text-white mb-1">{formatNumber(totalVolume24h)}</div>
-            <div className="text-green-400 text-sm">+12.5% (24h)</div>
-          </div>
-
-          <div className="feature-card">
-            <div className="flex items-center justify-between mb-2">
               <h3 className="text-gray-400 text-sm font-medium">Avg APR</h3>
               <div className="w-8 h-8 bg-gradient-to-r from-secondary to-primary rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">%</span>
@@ -239,6 +227,11 @@ export default function PoolsPage() {
             <div className="text-2xl font-bold text-white mb-1">{formatPercent(avgAPR)}</div>
             <div className="text-green-400 text-sm">+1.8% (7d)</div>
           </div>
+        </div>
+
+        {/* Pool Factory Connection */}
+        <div className="mb-8">
+          <PoolFactoryConnection />
         </div>
 
         {/* Controls Section */}
@@ -299,57 +292,73 @@ export default function PoolsPage() {
             <h2 className="text-xl font-bold text-white mb-6">Create New Pool</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Select First Token</label>
-                <div className="glass p-4 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
-                      <span className="text-sm font-bold">E</span>
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">Select Token</div>
-                      <div className="text-gray-400 text-xs">Choose first token</div>
-                    </div>
-                  </div>
-                </div>
+                <label className="text-sm text-gray-400 block mb-2">Token 0 Address</label>
+                <input
+                  type="text"
+                  value={token0Address}
+                  onChange={(e) => setToken0Address(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                />
               </div>
               <div>
-                <label className="text-sm text-gray-400 block mb-2">Select Second Token</label>
-                <div className="glass p-4 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-accent to-secondary rounded-full flex items-center justify-center">
-                      <span className="text-sm font-bold">U</span>
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">Select Token</div>
-                      <div className="text-gray-400 text-xs">Choose second token</div>
-                    </div>
+                <label className="text-sm text-gray-400 block mb-2">Token 1 Address</label>
+                <input
+                  type="text"
+                  value={token1Address}
+                  onChange={(e) => setToken1Address(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">Oracle 0 Address</label>
+                <input
+                  type="text"
+                  value={oracle0Address}
+                  onChange={(e) => setOracle0Address(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">Oracle 1 Address</label>
+                <input
+                  type="text"
+                  value={oracle1Address}
+                  onChange={(e) => setOracle1Address(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              
+              {/* Success/Error Messages */}
+              {isSuccess && (
+                <div className="md:col-span-2">
+                  <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4 text-center">
+                    <p className="text-green-400 font-medium">Pool created successfully!</p>
                   </div>
                 </div>
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-sm text-gray-400 block mb-2">Fee Tier</label>
-                <div className="grid grid-cols-3 gap-4">
-                  {[
-                    { rate: "0.01%", description: "Best for stable pairs" },
-                    { rate: "0.05%", description: "Best for most pairs" },
-                    { rate: "0.30%", description: "Best for exotic pairs" }
-                  ].map((tier) => (
-                    <div key={tier.rate} className="glass p-4 rounded-lg hover:bg-primary/10 transition-colors cursor-pointer border border-transparent hover:border-primary/30">
-                      <div className="text-white font-medium">{tier.rate}</div>
-                      <div className="text-gray-400 text-xs">{tier.description}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
+              
               <div className="md:col-span-2 flex justify-end space-x-4">
                 <button
                   onClick={() => setShowCreatePool(false)}
                   className="px-6 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+                  disabled={isCreating || isConfirming}
                 >
                   Cancel
                 </button>
-                <button className="btn-primary px-6 py-2">
-                  Create Pool
+                <button 
+                  onClick={handleCreatePool}
+                  disabled={!isConnected || isCreating || isConfirming || !token0Address || !token1Address || !oracle0Address || !oracle1Address}
+                  className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isCreating ? 'Creating...' : 
+                   isConfirming ? 'Confirming...' : 
+                   isSuccess ? 'Pool Created!' :
+                   !isConnected ? 'Connect Wallet' :
+                   'Create Pool'}
                 </button>
               </div>
             </div>
@@ -423,86 +432,7 @@ export default function PoolsPage() {
             </div>
           )}
         </div>
-
-        {/* Pool Analytics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="feature-card">
-            <h2 className="text-xl font-bold text-white mb-6">Pool Performance</h2>
-            <div className="space-y-4">
-              {mockPools.slice(0, 3).map((pool) => (
-                <div key={pool.id} className="glass p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex -space-x-1">
-                        <div className="w-6 h-6 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
-                          <span className="text-xs font-bold">{pool.token0.symbol[0]}</span>
-                        </div>
-                        <div className="w-6 h-6 bg-gradient-to-r from-accent to-secondary rounded-full flex items-center justify-center">
-                          <span className="text-xs font-bold">{pool.token1.symbol[0]}</span>
-                        </div>
-                      </div>
-                      <span className="text-white font-medium">{pool.token0.symbol}/{pool.token1.symbol}</span>
-                    </div>
-                    <span className="text-green-400 font-medium">{formatPercent(pool.apr)}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full" 
-                      style={{width: `${Math.min((pool.tvl / 20000000) * 100, 100)}%`}}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-2 text-sm text-gray-400">
-                    <span>TVL: {formatNumber(pool.tvl)}</span>
-                    <span>Vol: {formatNumber(pool.volume24h)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="feature-card">
-            <h2 className="text-xl font-bold text-white mb-6">Pool Distribution</h2>
-            <div className="space-y-4">
-              <div className="glass p-4 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-gray-400 text-sm">Stable Pairs</div>
-                    <div className="text-white font-medium text-lg">32%</div>
-                  </div>
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold">S</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="glass p-4 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-gray-400 text-sm">ETH Pairs</div>
-                    <div className="text-white font-medium text-lg">45%</div>
-                  </div>
-                  <div className="w-12 h-12 bg-gradient-to-r from-accent to-secondary rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold">E</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="glass p-4 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-gray-400 text-sm">Other Pairs</div>
-                    <div className="text-white font-medium text-lg">23%</div>
-                  </div>
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold">O</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-      
     </div>
   );
 }

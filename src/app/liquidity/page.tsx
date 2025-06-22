@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AddLiquiditySection from "@/components/AddLiquiditySection";
 
 interface Pool {
   id: string;
@@ -59,6 +60,11 @@ export default function LiquidityPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold gradient-text mb-2">Liquidity Analytics</h1>
           <p className="text-gray-400 text-lg">Track real-time market data and liquidity pools</p>
+        </div>
+
+        {/* Add Liquidity Section */}
+        <div className="mb-8">
+          <AddLiquiditySection />
         </div>
 
         {/* Market Overview Cards */}
