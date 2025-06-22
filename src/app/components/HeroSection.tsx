@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function HeroSection() {
